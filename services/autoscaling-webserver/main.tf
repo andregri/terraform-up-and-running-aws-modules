@@ -87,7 +87,7 @@ resource "aws_autoscaling_group" "web" {
 }
 
 resource "aws_security_group" "allow_http" {
-  name        = "allow_http_${terraform.workspace}"
+  name        = "server_allow_http_${terraform.workspace}"
   description = "Allow HTTP inbound traffic"
 
   ingress {
