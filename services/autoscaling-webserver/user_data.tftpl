@@ -3,6 +3,6 @@ echo "Init server..."
 sudo apt update
 sudo apt install -y apache2
 sudo ufw allow 'Apache'
-echo "hello world!" > /var/www/html/index.html
+echo ${server_text} > /var/www/html/index.html
 echo ${db_address} >> /var/www/html/index.html
 echo ${db_port} >> /var/www/html/index.html

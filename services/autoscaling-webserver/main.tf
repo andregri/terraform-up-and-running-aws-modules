@@ -48,6 +48,7 @@ resource "aws_launch_template" "web" {
   user_data = base64encode(templatefile("${path.module}/user_data.tftpl", {
     db_address = data.terraform_remote_state.db.outputs.address
     db_port = data.terraform_remote_state.db.outputs.port
+    server_text = var.server_text
   }))
 
   tags = {
@@ -57,17 +58,28 @@ resource "aws_launch_template" "web" {
 }
 
 resource "aws_autoscaling_group" "web" {
+  # Explicitly depends on the launch configuration name so each time it's
+  # replaced, this ASG is also replaced.
+  name = "${var.cluster_name}-${aws_launch_template.web.name}-${aws_launch_template.web.latest_version}"
+
   vpc_zone_identifier = data.aws_subnets.default.ids
 
   launch_template {
     id = aws_launch_template.web.id
+    version = aws_launch_template.web.latest_version
   }
 
   target_group_arns = [aws_lb_target_group.web.arn]
   health_check_type = "ELB"
 
-  min_size = 2
+  min_size = var.min_size
   max_size = 10
+
+  min_elb_capacity = var.min_size
+
+  lifecycle {
+    create_before_destroy = true
+  }
 
   tag {
     key                 = "Name"
